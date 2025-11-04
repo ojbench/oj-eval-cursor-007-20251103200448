@@ -153,21 +153,23 @@ void processLine(std::string line, Program &program, EvalState &state) {
         } else if (token == "HELP") {
             // Optional, not tested
         } else if (token == "LET") {
-            Expression *exp = parseExp(scanner);
+            Expression *exp = nullptr;
             try {
-                LetStatement stmt(exp);
-                stmt.execute(state, program);
-            } catch (...) {
+                exp = parseExp(scanner);
+                exp->eval(state);
                 delete exp;
+            } catch (...) {
+                if (exp) delete exp;
                 throw;
             }
         } else if (token == "PRINT") {
-            Expression *exp = parseExp(scanner);
+            Expression *exp = nullptr;
             try {
-                PrintStatement stmt(exp);
-                stmt.execute(state, program);
-            } catch (...) {
+                exp = parseExp(scanner);
+                std::cout << exp->eval(state) << std::endl;
                 delete exp;
+            } catch (...) {
+                if (exp) delete exp;
                 throw;
             }
         } else if (token == "INPUT") {
