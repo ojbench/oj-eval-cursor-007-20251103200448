@@ -85,4 +85,82 @@ public:
  * specify its own destructor method to free that memory.
  */
 
+class RemStatement : public Statement {
+public:
+    RemStatement() {}
+    virtual void execute(EvalState &state, Program &program) override {}
+};
+
+class LetStatement : public Statement {
+public:
+    LetStatement(Expression *exp) : exp(exp) {}
+    virtual ~LetStatement() { delete exp; }
+    virtual void execute(EvalState &state, Program &program) override {
+        exp->eval(state);
+    }
+private:
+    Expression *exp;
+};
+
+class PrintStatement : public Statement {
+public:
+    PrintStatement(Expression *exp) : exp(exp) {}
+    virtual ~PrintStatement() { delete exp; }
+    virtual void execute(EvalState &state, Program &program) override {
+        std::cout << exp->eval(state) << std::endl;
+    }
+private:
+    Expression *exp;
+};
+
+class InputStatement : public Statement {
+public:
+    InputStatement(std::string var) : var(var) {}
+    virtual void execute(EvalState &state, Program &program) override;
+private:
+    std::string var;
+};
+
+class EndStatement : public Statement {
+public:
+    EndStatement() {}
+    virtual void execute(EvalState &state, Program &program) override {
+        throw std::runtime_error("END");
+    }
+};
+
+class GotoStatement : public Statement {
+public:
+    GotoStatement(int lineNumber) : lineNumber(lineNumber) {}
+    virtual void execute(EvalState &state, Program &program) override {
+        throw lineNumber;
+    }
+private:
+    int lineNumber;
+};
+
+class IfStatement : public Statement {
+public:
+    IfStatement(Expression *lhs, std::string op, Expression *rhs, int targetLine) 
+        : lhs(lhs), op(op), rhs(rhs), targetLine(targetLine) {}
+    virtual ~IfStatement() { delete lhs; delete rhs; }
+    virtual void execute(EvalState &state, Program &program) override {
+        int left = lhs->eval(state);
+        int right = rhs->eval(state);
+        bool condition = false;
+        if (op == "=") condition = (left == right);
+        else if (op == "<") condition = (left < right);
+        else if (op == ">") condition = (left > right);
+        
+        if (condition) {
+            throw targetLine;
+        }
+    }
+private:
+    Expression *lhs;
+    std::string op;
+    Expression *rhs;
+    int targetLine;
+};
+
 #endif
