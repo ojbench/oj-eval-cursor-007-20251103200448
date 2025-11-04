@@ -128,6 +128,10 @@ void processLine(std::string line, Program &program, EvalState &state) {
                         stmt->execute(state, program);
                         currentLine = program.getNextLineNumber(currentLine);
                     } catch (int targetLine) {
+                        if (program.getSourceLine(targetLine).empty()) {
+                            std::cout << "LINE NUMBER ERROR" << std::endl;
+                            break;
+                        }
                         currentLine = targetLine;
                     } catch (std::runtime_error &e) {
                         if (std::string(e.what()) == "END") {
